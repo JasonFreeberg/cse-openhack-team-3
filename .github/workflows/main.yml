@@ -1,0 +1,25 @@
+name: CI
+
+on: 
+  push:
+    branches: 
+      - jeff-dev
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Install maven and Java
+      run: |
+        sudo apt-get install openjdk-8-jre
+        sudo apt-get install maven
+    
+    - name: Maven package
+      run: |
+        cd ./ratingsAPIs/createRating
+        mvn clean package
