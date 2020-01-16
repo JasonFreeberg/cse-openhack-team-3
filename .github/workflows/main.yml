@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - jeff-dev
+      - master
 env:
   createRatingAppName: azure-function-20200116125628847
   getRatingAppName: getRatingsGroupAwesome
