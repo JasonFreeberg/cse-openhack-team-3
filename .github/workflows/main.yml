@@ -4,6 +4,8 @@ on:
   push:
     branches: 
       - jeff-dev
+env:
+  createRatingAppName: azure-function-20200116125628847
 
 jobs:
   build:
@@ -24,12 +26,25 @@ jobs:
         cd ./ratingsAPIs/createRating
         mvn clean package
         
+    - name: Upload artifact createRating
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: createRatingApp
+        # Directory containing files to upload
+        path: ./ratingsAPIs/createRating/target/azure-functions/${{ env.createRatingAppName }}
+        
   release:
     needs: build
     runs-on: [ubuntu-latest]
-    env:
-      functionAppName: azure-function-20200116125628847
     steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          # Artifact name
+          name: createRatingApp
+          # Destination path
+          path: ./artifacts/createRatingApp
       - name: Azure Login
         uses: Azure/login@v1
         with:
@@ -41,6 +56,6 @@ jobs:
           # Name of the Azure Function App
           app-name: jeff-test-githubactions
           # Path to package or folder. *.zip or a folder to deploy
-          package: ./ratingsAPIs/createRating/target/azure-functions/${{ env.functionAppName }}
+          package: ./artifacts/createRatingApp
         
     
