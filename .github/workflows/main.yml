@@ -1,0 +1,102 @@
+name: CI
+
+on: 
+  push:
+    branches: 
+      - jeff-dev
+      - master
+env:
+  createRatingAppName: createRating-openhack-team3-freeberg
+  getRatingAppName: getRatingsGroupAwesome
+
+jobs:
+  buildGetRating:   
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1.4.0
+      with:
+        dotnet-version: 2.1.803
+    - name: Build getRating
+      run: |
+        cd ./ratingsAPIs/getRating
+        dotnet restore
+        dotnet build -c Release
+    - name: Upload artifact createRating
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: getRatingApp
+        # Directory containing files to upload
+        path: ./ratingsAPIs/getRating/bin/Release/netcoreapp2.1
+      
+  buildCreateRating:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install maven and Java
+      run: |
+        sudo apt-get install openjdk-8-jre
+        sudo apt-get install maven   
+    - name: Maven package createRating
+      run: |
+        cd ./ratingsAPIs/createRating
+        mvn clean package        
+    - name: Upload artifact createRating
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: createRatingApp
+        # Directory containing files to upload
+        path: ./ratingsAPIs/createRating/target/azure-functions/${{ env.createRatingAppName }}
+        
+  releaseCreateRating:
+    needs: buildCreateRating
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          # Artifact name
+          name: createRatingApp
+          # Destination path
+          path: ./artifacts/createRatingApp
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure Functions Action
+        uses: Azure/functions-action@v1.1.3
+        with:
+          # Name of the Azure Function App
+          app-name: ${{ env.createRatingAppName }}
+          # Path to package or folder. *.zip or a folder to deploy
+          package: ./artifacts/createRatingApp
+
+  releaseGetRating:
+    needs: buildGetRating
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          # Artifact name
+          name: getRatingApp
+          # Destination path
+          path: ./artifacts/getRatingApp
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure Functions Action
+        uses: Azure/functions-action@v1.1.3
+        with:
+          # Name of the Azure Function App
+          app-name: ${{ env.getRatingAppName }}
+          # Path to package or folder. *.zip or a folder to deploy
+          package: ./artifacts/getRatingApp
+        
+    
