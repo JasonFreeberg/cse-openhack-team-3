@@ -18,7 +18,7 @@ jobs:
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1.4.0
       with:
-        dotnet-version: 2.1.15
+        dotnet-version: 2.1.803
     - name: Build getRating
       run: |
         cd ./ratingsAPIs/getRating
