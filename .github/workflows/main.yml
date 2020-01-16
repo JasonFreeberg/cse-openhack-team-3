@@ -19,20 +19,28 @@ jobs:
         sudo apt-get install openjdk-8-jre
         sudo apt-get install maven
     
-    - name: Maven package
+    - name: Maven package createRating
       run: |
         cd ./ratingsAPIs/createRating
         mvn clean package
+        
+  release:
+    needs: build
+    runs-on: [ubuntu-latest]
+    env:
+      functionAppName: azure-function-20200116125628847
+    steps:
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Azure Login
-      uses: Azure/login@v1
-      with:
-        creds: ${{secrets.AZURE_CREDENTIALS}}
+      - name: Azure Functions Action
+        uses: Azure/functions-action@v1.1.3
+        with:
+          # Name of the Azure Function App
+          app-name: jeff-test-githubactions
+          # Path to package or folder. *.zip or a folder to deploy
+          package: ./ratingsAPIs/createRating/target/azure-functions/${{ env.functionAppName }}
+        
     
-    - name: Azure Functions Action
-      uses: Azure/functions-action@v1.1.3
-      with:
-        # Name of the Azure Function App
-        app-name: jeff-test-githubactions
-        # Path to package or folder. *.zip or a folder to deploy
-        package: ./ratingsAPIs/createRating/target/azure-functions/azure-function-20200116125628847
