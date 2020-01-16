@@ -80,7 +80,7 @@ public class Function {
     @FunctionName("create-rating")
     public HttpResponseMessage run(
         @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
-        @CosmosDBOutput(name = "team3-cosmos-account", databaseName = "Products", collectionName = "Ratings", connectionStringSetting = "CosmosDBConnectionString") OutputBinding<POSTinput> document,
+        @CosmosDBOutput(name = "cosmosOutputBinding", databaseName = "Products", collectionName = "Ratings", connectionStringSetting = "CosmosDBConnectionString") OutputBinding<POSTinput> document,
         final ExecutionContext context) 
         {
             if (request.getBody().isPresent()) {
@@ -88,19 +88,15 @@ public class Function {
                     POSTinput body = mapper.readValue(request.getBody().get(), POSTinput.class);
                     Boolean requestIsValid = true;
 
-                    // Validate that the rating field is an integer from 0 to 5
-                    //String example = body.get("rating");
+                    // Validate request
                     Integer rating = body.rating;
                     if (rating < 0 | rating > 5) requestIsValid = false; 
                     if(!userIdIsValid(body.userId)) requestIsValid = false; 
                     if(!productIdIsValid(body.productId)) requestIsValid = false;
                     
-                    // Prepare response
-                        // Add a property called id with a GUID value
-                        // Add a property called timestamp with the current UTC date time
+                    // Prepare an set review object
                     body.id = UUID.randomUUID().toString();
                     body.timeStamp = new Timestamp(new Date().getTime()).toString();
-
                     document.setValue(body);
 
                     // Send response
@@ -108,13 +104,13 @@ public class Function {
                         .createResponseBuilder(HttpStatus.ACCEPTED)
                         .body(body)
                         .build();
-                } catch(Exception e) {
-                    e.printStackTrace();
+                    } catch(Exception e) {
+                        e.printStackTrace();
                     return request
                         .createResponseBuilder(HttpStatus.BAD_REQUEST)
                         .body("There was a problem processing the request")
                         .build();
-                }
+                    }
             } else {
                 return request
                     .createResponseBuilder(HttpStatus.BAD_REQUEST)
