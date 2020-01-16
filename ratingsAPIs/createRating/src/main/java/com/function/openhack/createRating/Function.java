@@ -80,7 +80,7 @@ public class Function {
     @FunctionName("create-rating")
     public HttpResponseMessage run(
         @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
-        @CosmosDBOutput(name = "cosmosOutputBinding", databaseName = "Products", collectionName = "Ratings", connectionStringSetting = "CosmosDBConnectionString") OutputBinding<POSTinput> document,
+        @CosmosDBOutput(name = "document", databaseName = "Products", collectionName = "Ratings", connectionStringSetting = "CosmosDBConnectionString") OutputBinding<POSTinput> document,
         final ExecutionContext context) 
         {
             if (request.getBody().isPresent()) {
