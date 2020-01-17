@@ -67,7 +67,7 @@ namespace FunctionApp2
                 log.LogInformation(i.UserId);
             }
 
-            /// serializes the json data so it can be read when we hit the end point
+            // serializes the json data so it can be read when we hit the end point
             var jsonToReturn = JsonConvert.SerializeObject(product);
 
             return new HttpResponseMessage(HttpStatusCode.OK)
